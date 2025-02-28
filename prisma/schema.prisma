@@ -1,0 +1,927 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id          Int          @id @default(autoincrement())
+  created     DateTime?    @default(now())
+  updated     DateTime?    @updatedAt
+  deleted     Boolean?     @default(false)
+  activated   Boolean?     @default(true)
+  description String?
+  logo        String?
+  managerId   Int?
+  creatorId   Int?
+  name        String?
+  order       Int?         @default(0)
+  orgid       String?
+  website     String?
+  uuid        String?      @default(uuid())
+  departments Department[]
+  members     Member[]
+  roles       Role[]
+
+  @@map("organizations_organization")
+}
+
+model Department {
+  id               Int           @id @default(autoincrement())
+  created          DateTime?     @default(now())
+  updated          DateTime?     @updatedAt
+  uuid             String?       @default(uuid())
+  deleted          Boolean?      @default(false)
+  parent           Department?   @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children         Department[]  @relation("children")
+  parentId         Int?
+  isRoot           Boolean?      @default(false)
+  isLeaf           Boolean?      @default(false)
+  isFolder         Boolean?      @default(false)
+  order            Int?          @default(0)
+  depath           Int?          @default(0)
+  npath            String?
+  path             String?
+  remark           String?
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  organizationId   Int?
+  name             String?
+  organizationName String?
+  departmentId     Int?          @unique
+  departments      Member[]
+
+  @@index([organizationId])
+  @@map("organizations_department")
+}
+
+model Member {
+  id               Int           @id @default(autoincrement())
+  created          DateTime?     @default(now())
+  updated          DateTime?     @updatedAt
+  deleted          Boolean?      @default(false)
+  activated        Boolean?      @default(true)
+  departmentName   String?
+  email            String?
+  gender           Int?          @default(0)
+  nickname         String?
+  phone            String?
+  position         String?
+  userId           Int?          @unique
+  username         String?
+  name             String?
+  avatar           String?
+  organizationId   Int?
+  departmentId     Int?
+  organizationName String?
+  serial           String?       @unique
+  uuid             String?       @default(uuid())
+  superuser        Boolean?      @default(false)
+  developer        Boolean?      @default(false)
+  dingtalkUserId   String?       @unique
+  weworkUserId     String?       @unique
+  password         String?
+  secret           String?
+  user             User?         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  department       Department?   @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  roles            Role[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([departmentId])
+  @@map("organizations_member")
+}
+
+enum ResourceScene {
+  APPLICATION
+  MENU
+  API
+  ELEMENT
+}
+
+enum ResourceScope {
+  ALL
+  ROLES
+  MEMBERS
+  CREATOR
+}
+
+enum ResourceOperation {
+  READ
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model Resource {
+  alias         String?
+  available     Boolean?           @default(true)
+  display       Boolean?           @default(true)
+  icon          String?
+  name          String?
+  title         String?
+  scene         ResourceScene?     @default(ELEMENT)
+  scope         ResourceScope?     @default(ROLES)
+  operation     ResourceOperation? @default(READ)
+  appId         String?
+  applicationId Int?
+  id            Int                @id @default(autoincrement())
+  created       DateTime?          @default(now())
+  updated       DateTime?          @updatedAt
+  uuid          String?            @unique @default(uuid())
+  deleted       Boolean?           @default(false)
+  parent        Resource?          @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children      Resource[]         @relation("children")
+  parentId      Int?
+  isRoot        Boolean?           @default(false)
+  isFolder      Boolean?           @default(false)
+  isLeaf        Boolean?           @default(false)
+  order         Int?               @default(0)
+  depath        Int?               @default(0)
+  bizId         String?
+  npath         String?
+  path          String?
+  url           String?
+  members       String?
+  application   Application?       @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  roles         Role[]
+
+  @@unique([applicationId, alias], name: "applicationId_alias")
+  @@index([applicationId])
+  @@map("organizations_resource")
+}
+
+model Role {
+  id               Int           @id @default(autoincrement())
+  created          DateTime?     @default(now())
+  updated          DateTime?     @updatedAt
+  uuid             String?       @default(uuid())
+  deleted          Boolean?      @default(false)
+  activated        Boolean?      @default(true)
+  alias            String?
+  name             String?
+  order            Int?          @default(0)
+  organizationId   Int?
+  remark           String?
+  organizationName String?
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  members          Member[]
+  resources        Resource[]
+
+  @@index([organizationId])
+  @@map("organizations_role")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  created        DateTime? @default(now())
+  updated        DateTime? @updatedAt
+  uuid           String?   @default(uuid())
+  deleted        Boolean?  @default(false)
+  activated      Boolean?  @default(true)
+  avatar         String?
+  birthday       DateTime?
+  gender         Int?      @default(0)
+  name           String?
+  nickname       String?
+  password       String?
+  position       String?
+  role           String?
+  serial         String?   @unique
+  superuser      Boolean?  @default(false)
+  memberId       Int?
+  email          String?   @unique
+  username       String?   @unique
+  phone          String?   @unique
+  dingtalkUserId String?
+  weworkUserId   String?
+  member         Member?
+
+  @@map("users_user")
+}
+
+model Captcha {
+  id            Int       @id @default(autoincrement())
+  created       DateTime? @default(now())
+  updated       DateTime? @updatedAt
+  uuid          String?   @default(uuid())
+  deleted       Boolean?  @default(false)
+  code          String?
+  email         String?
+  expired       DateTime?
+  phone         String?
+  recipientName String?
+  recipientId   String?
+  scene         String?   @default("PHONE_LOGIN")
+
+  @@map("systems_captcha")
+}
+
+model Dictionary {
+  id         Int          @id @default(autoincrement())
+  created    DateTime?    @default(now())
+  updated    DateTime?    @updatedAt
+  uuid       String?      @default(uuid())
+  deleted    Boolean?     @default(false)
+  parent     Dictionary?  @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children   Dictionary[] @relation("children")
+  parentId   Int?
+  isRoot     Boolean?     @default(false)
+  isLeaf     Boolean?     @default(false)
+  isFolder   Boolean?     @default(false)
+  order      Int?         @default(0)
+  depath     Int?         @default(0)
+  npath      String?
+  alias      String?
+  key        String?
+  name       String?
+  options    Json?
+  remark     String?
+  scene      String?
+  value      String?
+  widget     String?
+  content    Json?
+  attachment String?
+
+  @@map("systems_dictionary")
+}
+
+model Notification {
+  id              Int       @id @default(autoincrement())
+  agentid         Int?
+  amount          Decimal?  @default(0) @db.Decimal(10, 2)
+  content         String?
+  description     String?
+  hidden          Boolean?  @default(false)
+  executed        Boolean?  @default(false)
+  msgtype         String?
+  readed          Boolean?  @default(false)
+  recipientId     String?
+  recipientName   String?
+  relationid      String?
+  remark          String?
+  scene           String?
+  schedule        DateTime?
+  title           String?
+  domain          String?
+  toall           Boolean?  @default(false)
+  toparty         String?
+  touser          String?
+  url             String?
+  path            String?
+  viewId          String?
+  appId           String?
+  applicationId   Int?
+  applicationName String?
+  platform        String?
+  params          Json?
+  created         DateTime? @default(now())
+  updated         DateTime? @updatedAt
+  uuid            String?   @default(uuid())
+  deleted         Boolean?  @default(false)
+
+  @@map("systems_notification")
+}
+
+model Attachment {
+  id       Int       @id @default(autoincrement())
+  created  DateTime? @default(now())
+  updated  DateTime? @updatedAt
+  uuid     String?   @default(uuid())
+  deleted  Boolean?  @default(false)
+  name     String?
+  path     String?
+  size     Int?      @default(0)
+  suffix   String?
+  url      String?
+  scene    String?
+  bizId    Int?
+  mimetype String?
+
+  @@index([bizId])
+  @@map("systems_attachment")
+}
+
+model Signlog {
+  id        Int       @id @default(autoincrement())
+  created   DateTime? @default(now())
+  updated   DateTime? @updatedAt
+  uuid      String?   @default(uuid())
+  deleted   Boolean?  @default(false)
+  ipaddr    String?
+  operation String?
+  platform  String?
+  scene     String?
+  uaInfo    String?
+  userId    Int?
+  username  String?
+
+  @@map("systems_signlog")
+}
+
+model Operation {
+  id          Int       @id @default(autoincrement())
+  created     DateTime? @default(now())
+  updated     DateTime? @updatedAt
+  uuid        String?   @default(uuid())
+  deleted     Boolean?  @default(false)
+  creatorId   String?
+  creatorName String?
+  title       String?
+  description String?
+  scene       String?
+  tags        String?
+  bizId       Int?
+  appId       String?
+
+  @@index([bizId])
+  @@index([appId])
+  @@map("systems_operation")
+}
+
+enum ApplicationType {
+  WEBAPP
+  NESTJS
+}
+
+model Application {
+  id           Int                    @id @default(autoincrement())
+  created      DateTime?              @default(now())
+  updated      DateTime?              @updatedAt
+  uuid         String?                @default(uuid())
+  deleted      Boolean?               @default(false)
+  title        String?
+  name         String?                @unique
+  logo         String?
+  type         ApplicationType?       @default(WEBAPP)
+  appId        String?                @unique
+  appSecret    String?
+  order        Int?                   @default(0)
+  activated    Boolean?               @default(true)
+  thumb        String?
+  domain       String?
+  description  String?
+  callbackPath String?
+  publicKey    String?                @db.Text
+  primary      Boolean?               @default(false)
+  scene        String?                @default("ANT_DESIGN_PRO")
+  published    Boolean?               @default(false)
+  deployed     Boolean?               @default(false)
+  public       Boolean?               @default(true)
+  creatorId    Int?
+  creatorName  String?
+  backend      Boolean?               @default(false)
+  versions     ApplicationVersion[]
+  menus        ApplicationMenu[]
+  containers   ApplicationContainer[]
+  components   ApplicationComponent[]
+  modules      BackendModule[]
+  resources    Resource[]
+  members      ApplicationMember[]
+
+  @@map("applications")
+}
+
+model ApplicationVersion {
+  id              Int          @id @default(autoincrement())
+  created         DateTime?    @default(now())
+  updated         DateTime?    @updatedAt
+  uuid            String?      @default(uuid())
+  deleted         Boolean?     @default(false)
+  name            String?
+  serial          String?
+  version         Int?         @default(1)
+  description     String?
+  status          String?      @default("DRAFT")
+  applicationName String?
+  packageUrl      String?
+  publishTime     DateTime?
+  application     Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  applicationId   Int?
+
+  @@index([applicationId])
+  @@map("application_versions")
+}
+
+model ApplicationMenu {
+  id               Int                   @id @default(autoincrement())
+  created          DateTime?             @default(now())
+  updated          DateTime?             @updatedAt
+  uuid             String?               @default(uuid())
+  deleted          Boolean?              @default(false)
+  parent           ApplicationMenu?      @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children         ApplicationMenu[]     @relation("children")
+  parentId         Int?
+  isRoot           Boolean?              @default(false)
+  isFolder         Boolean?              @default(false)
+  isLeaf           Boolean?              @default(false)
+  order            Int?                  @default(0)
+  name             String?
+  title            String?
+  redirect         String?
+  depath           Int?                  @default(0)
+  npath            String?
+  wrappers         String?
+  access           String?
+  icon             String?
+  hideInMenu       Boolean?              @default(false)
+  hideChildrenMenu Boolean?              @default(false)
+  containerId      Int?
+  applicationId    Int?
+  application      Application?          @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  path             String?
+  type             String?
+  container        ApplicationContainer?
+
+  @@unique([parentId, name], name: "parentId_name")
+  @@index([applicationId])
+  @@map("application_menus")
+}
+
+enum ApplicationMemberRole {
+  VISITOR
+  DEVELOPER
+  ADMINISTRATOR
+}
+
+model ApplicationMember {
+  id            Int                   @id @default(autoincrement())
+  created       DateTime?             @default(now())
+  updated       DateTime?             @updatedAt
+  uuid          String?               @default(uuid())
+  deleted       Boolean?              @default(false)
+  order         Int?                  @default(0)
+  name          String?
+  username      String?
+  email         String?
+  avatar        String?
+  role          ApplicationMemberRole @default(VISITOR)
+  applicationId Int?
+  memberId      Int?
+  application   Application?          @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  // member        Member?               @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([applicationId, memberId])
+  @@index([applicationId])
+  @@index([memberId])
+  @@map("application_members")
+}
+
+enum ContainerType {
+  CONTAINER
+  COMPONENT
+}
+
+model ApplicationContainer {
+  id            Int                    @id @default(autoincrement())
+  created       DateTime?              @default(now())
+  updated       DateTime?              @updatedAt
+  uuid          String?                @default(uuid())
+  deleted       Boolean?               @default(false)
+  name          String?
+  title         String?
+  path          String?
+  type          ContainerType?         @default(CONTAINER)
+  activated     Boolean?               @default(false)
+  isPlayground  Boolean?               @default(false)
+  isInternal    Boolean?               @default(false)
+  description   String?
+  order         Int?                   @default(0)
+  states        Json?
+  references    Json?
+  params        Json?
+  actions       Json?
+  props         Json?
+  useeffects    Json?
+  usememos      Json?
+  userequests   Json?
+  hooks         Json?
+  imports       Json?
+  applicationId Int?
+  creatorId     String?
+  application   Application?           @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  menuId        Int?                   @unique
+  menu          ApplicationMenu?       @relation(fields: [menuId], references: [id])
+  components    ApplicationComponent[]
+
+  @@index([menuId])
+  @@index([applicationId])
+  @@map("application_containers")
+}
+
+model ApplicationComponent {
+  id             Int                    @id @default(autoincrement())
+  created        DateTime?              @default(now())
+  updated        DateTime?              @updatedAt
+  uuid           String?                @default(uuid())
+  deleted        Boolean?               @default(false)
+  parent         ApplicationComponent?  @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children       ApplicationComponent[] @relation("children")
+  parentId       Int?
+  isRoot         Boolean?               @default(false)
+  isFolder       Boolean?               @default(false)
+  isLeaf         Boolean?               @default(false)
+  order          Int?                   @default(0)
+  depath         Int?                   @default(0)
+  npath          String?
+  title          String?
+  path           String?
+  boilerplate    String?
+  documentUrl    String?
+  package        String?
+  reference      String?
+  accessKey      String?
+  props          Json?
+  config         Json?
+  states         Json?
+  relation       Json?
+  isDraft        Boolean?               @default(false)
+  isDirect       Boolean?               @default(false)
+  isPersonal     Boolean?               @default(false)
+  isInternal     Boolean?               @default(false)
+  defaultPackage Boolean?               @default(false)
+  containerId    Int?
+  creatorId      String?
+  container      ApplicationContainer?  @relation(fields: [containerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  applicationId  Int?
+  application    Application?           @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name           String?
+
+  @@index([containerId])
+  @@index([applicationId])
+  @@map("application_components")
+}
+
+enum BackendModuleType {
+  GENERIC
+  TREE
+}
+
+model BackendModule {
+  icon          String?
+  id            Int                @id @default(autoincrement())
+  created       DateTime?          @default(now())
+  updated       DateTime?          @updatedAt
+  uuid          String?            @default(uuid())
+  deleted       Boolean?           @default(false)
+  parent        BackendModule?     @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children      BackendModule[]    @relation("children")
+  parentId      Int?
+  isRoot        Boolean?           @default(false)
+  isFolder      Boolean?           @default(false)
+  isLeaf        Boolean?           @default(false)
+  order         Int?               @default(0)
+  depath        Int?               @default(0)
+  npath         String?
+  idpath        String?
+  name          String?
+  title         String?
+  serial        String?
+  access        String?
+  controllerId  Int?
+  entityId      Int?
+  type          BackendModuleType? @default(GENERIC)
+  applicationId Int?
+  application   Application?       @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  path          String?
+  controller    BackendController?
+  entity        BackendEntity?
+
+  @@index([applicationId])
+  @@map("backend_modules")
+}
+
+enum BackendControllerType {
+  GENERIC
+  TREE
+}
+
+model BackendController {
+  id            Int                    @id @default(autoincrement())
+  created       DateTime?              @default(now())
+  updated       DateTime?              @updatedAt
+  uuid          String?                @default(uuid())
+  deleted       Boolean?               @default(false)
+  name          String?
+  title         String?
+  path          String?
+  type          BackendControllerType? @default(GENERIC)
+  description   String?
+  order         Int?                   @default(0)
+  npath         String?
+  applicationId Int?
+  moduleId      Int?                   @unique
+  module        BackendModule?         @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("backend_controllers")
+}
+
+enum BackendEntityType {
+  GENERIC
+  TREE
+}
+
+model BackendEntity {
+  id            Int                @id @default(autoincrement())
+  created       DateTime?          @default(now())
+  updated       DateTime?          @updatedAt
+  uuid          String?            @default(uuid())
+  deleted       Boolean?           @default(false)
+  name          String?
+  title         String?
+  tableName     String?
+  tree          Boolean?           @default(false)
+  uniques       Json?
+  applicationId Int?
+  npath         String?
+  type          BackendEntityType? @default(GENERIC)
+  module        BackendModule?     @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  moduleId      Int?               @unique
+  fields        BackendField[]
+
+  @@map("backend_entities")
+}
+
+model BackendField {
+  id             Int            @id @default(autoincrement())
+  created        DateTime?      @default(now())
+  updated        DateTime?      @updatedAt
+  uuid           String?        @default(uuid())
+  name           String?
+  deleted        Boolean?       @default(false)
+  dbtype         String?
+  len            Int?
+  primary        Boolean?       @default(false)
+  required       Boolean?       @default(false)
+  unique         Boolean?       @default(false)
+  nullable       Boolean?       @default(true)
+  default        Json?
+  comment        String?
+  description    String?
+  precision      Int?
+  scale          Int?
+  isForeign      Boolean?       @default(false)
+  autoincrement  Boolean?       @default(false)
+  reference      Json?
+  referenceField String?
+  referenceType  String?
+  enums          Json?
+  entityId       Int?
+  relatedId      Int?
+  foreign        Json?
+  props          Json?
+  entityName     String?
+  relatedName    String?
+  operator       String?
+  mode           String?
+  order          Int?           @default(0)
+  index          Int?           @default(0)
+  maximum        Int?
+  minimum        Int?
+  maxLength      Int?
+  minLength      Int?
+  pattern        String?
+  entity         BackendEntity? @relation(fields: [entityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  dataType       String?        @default("string")
+  type           String?        @default("String")
+  scene          String?        @default("ORDINARY")
+  rules          Json?
+  apiProperty    Json?
+
+  @@index([entityId])
+  @@map("backend_fields")
+}
+
+model Database {
+  id          Int       @id @default(autoincrement())
+  created     DateTime? @default(now())
+  updated     DateTime? @updatedAt
+  uuid        String?   @default(uuid())
+  deleted     Boolean?  @default(false)
+  title       String?
+  database    String?
+  username    String?
+  password    String?
+  port        Int?
+  creatorId   Int?
+  type        String?   @default("MYSQL")
+  activated   Boolean?  @default(true)
+  description String?
+  order       Int?      @default(0)
+  host        String?   @default("127.0.0.1")
+
+  @@map("datasource_databases")
+}
+
+model ServiceGroup {
+  id            Int           @id @default(autoincrement())
+  created       DateTime?     @default(now())
+  updated       DateTime?     @updatedAt
+  uuid          String?       @default(uuid())
+  deleted       Boolean?      @default(false)
+  title         String?
+  name          String?
+  host          String?
+  basePath      String?
+  description   String?
+  version       String?
+  params        Json?
+  order         Int?          @default(0)
+  importMethod  String?       @default("LINK")
+  importUrl     String?
+  applicationId Int?
+  creatorId     Int?
+  dataservices  Dataservice[]
+  dataschemas   Dataschema[]
+
+  @@map("datasource_servicegroups")
+}
+
+model Dataservice {
+  authRequired  Boolean?      @default(false)
+  id            Int           @id @default(autoincrement())
+  created       DateTime?     @default(now())
+  updated       DateTime?     @updatedAt
+  uuid          String?       @default(uuid())
+  deleted       Boolean?      @default(false)
+  name          String?
+  path          String?
+  summary       String?
+  method        String?       @default("GET")
+  params        Json?
+  responses     Json?
+  requestBody   Json?
+  schemaId      Int?
+  reference     String?
+  description   String?
+  groupName     String?
+  tags          String?
+  creatorId     Int?
+  order         Int?          @default(0)
+  groupId       Int?
+  group         ServiceGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  applicationId Int?
+
+  @@index([groupId])
+  @@map("datasource_dataservices")
+}
+
+model Dataschema {
+  id          Int           @id @default(autoincrement())
+  created     DateTime?     @default(now())
+  updated     DateTime?     @updatedAt
+  uuid        String?       @default(uuid())
+  deleted     Boolean?      @default(false)
+  path        String?
+  summary     String?
+  title       String?
+  type        String?
+  properties  Json?
+  description String?
+  order       Int?          @default(0)
+  groupId     Int?
+  creatorId   Int?
+  group       ServiceGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name        String?
+
+  @@unique([groupId, name], name: "groupId_name")
+  @@index([groupId])
+  @@map("datasource_dataschemas")
+}
+
+model Material {
+  id          Int                 @id @default(autoincrement())
+  created     DateTime?           @default(now())
+  updated     DateTime?           @updatedAt
+  uuid        String?             @unique @default(uuid())
+  deleted     Boolean?            @default(false)
+  name        String?
+  alias       String?
+  title       String?
+  path        String?
+  url         String?
+  boilerplate String?
+  propType    String?             @default("NORMAL")
+  package     String?
+  thumb       String?
+  order       Int?                @default(0)
+  props       Json?
+  config      Json?
+  columns     Json?
+  states      Json?
+  sections    Json?
+  materialId  Int?
+  creatorId   Int?
+  isPersonal  Boolean?            @default(false)
+  editable    Boolean?            @default(true)
+  components  MaterialComponent[]
+
+  @@map("materials_material")
+}
+
+model MaterialComponent {
+  id            Int              @id @default(autoincrement())
+  created       DateTime?        @default(now())
+  updated       DateTime?        @updatedAt
+  uuid          String?          @unique @default(uuid())
+  deleted       Boolean?         @default(false)
+  name          String?
+  alias         String?
+  title         String?
+  key           String?
+  package       String?
+  documentUrl   String?
+  thumb         String?
+  description   String?
+  order         Int?             @default(0)
+  boilerplate   String?
+  tags          String?
+  actionsEnable Boolean?         @default(false)
+  attrs         Json?
+  columnType    String?
+  columnsEnable Boolean?         @default(false)
+  extraEnable   Boolean?         @default(false)
+  materialName  String?
+  isLayout      Boolean?         @default(false)
+  isOfficial    Boolean?         @default(true)
+  isContainer   Boolean?         @default(false)
+  isFontIcon    Boolean?         @default(false)
+  componentType String?
+  defaulted     Boolean?         @default(false)
+  sections      Json?
+  actions       Json?
+  materialId    Int?
+  creatorId     Int?
+  material      Material?        @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  props         ComponentProps[]
+
+  @@index([materialId])
+  @@map("material_components")
+}
+
+model ComponentProps {
+  id           Int                @id @default(autoincrement())
+  created      DateTime?          @default(now())
+  updated      DateTime?          @updatedAt
+  uuid         String?            @unique @default(uuid())
+  deleted      Boolean?           @default(false)
+  parent       ComponentProps?    @relation("children", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  children     ComponentProps[]   @relation("children")
+  parentId     Int?
+  isRoot       Boolean?           @default(false)
+  isFolder     Boolean?           @default(false)
+  isLeaf       Boolean?           @default(false)
+  order        Int?               @default(0)
+  depath       Int?               @default(0)
+  npath        String?
+  name         String?
+  parentName   String?
+  dataType     String?
+  defaultType  String?
+  defaultValue String?
+  value        String?
+  renderCode   String?
+  valueType    String?            @db.VarChar(255)
+  editable     Boolean?           @default(true)
+  remark       String?
+  widget       String?
+  propType     String?
+  required     Boolean?           @default(false)
+  options      Json?
+  source       String?
+  description  String?
+  version      String?
+  args         Json?
+  schema       Json?
+  componentId  Int?
+  materialId   Int?
+  component    MaterialComponent? @relation(fields: [componentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([componentId])
+  @@map("material_component_props")
+}
+
+// model MaterialFonticon {
+//   id          Int       @id @default(autoincrement())
+//   created     DateTime? @default(now())
+//   updated     DateTime  @updatedAt
+//   deleted     Boolean?  @default(false)
+//   name        String    @db.VarChar(32)
+//   category    String?   @db.VarChar(64)
+//   package     String    @db.VarChar(32)
+//   packageName String?   @db.VarChar(32)
+//   order       Int?      @default(0)
+//   uuid        String?   @unique @default(uuid())
+//   alias       String?   @db.VarChar(32)
+
+//   @@map("material_fonticon")
+// }
