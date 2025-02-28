@@ -909,19 +909,3 @@ model ComponentProps {
   @@index([componentId])
   @@map("material_component_props")
 }
-
-// model MaterialFonticon {
-//   id          Int       @id @default(autoincrement())
-//   created     DateTime? @default(now())
-//   updated     DateTime  @updatedAt
-//   deleted     Boolean?  @default(false)
-//   name        String    @db.VarChar(32)
-//   category    String?   @db.VarChar(64)
-//   package     String    @db.VarChar(32)
-//   packageName String?   @db.VarChar(32)
-//   order       Int?      @default(0)
-//   uuid        String?   @unique @default(uuid())
-//   alias       String?   @db.VarChar(32)
-
-//   @@map("material_fonticon")
-// }

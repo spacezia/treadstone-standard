@@ -1,99 +1,83 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <a href="https://www.treadstone.design/" target="blank"><img src="https://www.treadstone.design/logo.png" width="120" alt="Treadstone Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<h3 align="center">轻量低代码应用开发平台</h3>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 前置依赖
+- Nodejs 18^  
+- MySQL 8.0^  
+- Redis  
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
+## 安装
+1. 全局安装Treadstone CLI命令行工具：
 ```bash
-$ pnpm install
+npm i -g treadstone-cli
 ```
 
-## Compile and run the project
-
+2. 将Treadstone安装到当前文件夹：
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+stone install
 ```
 
-## Run tests
-
+3. 安装依赖：
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+cd treadstone-standard && npm i --production
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+4. 根据需要修改全局配置.env文件：
 ```bash
-$ pnpm install -g mau
-$ mau deploy
+#.env
+
+# YOUR_MYSQL_DATABASE_URL
+DATABASE_URL="mysql://USERNAME:PASSWORD@HOST:PORT/DATABASE"
+
+PORT=9000
+
+JWT_EXPIRED="7 days"
+JWT_SECRET="<YOUR_JWT_SECRET>"
+
+# 如需接入钉钉同步组织架构/钉钉扫码登录，请添加以下配置:
+# DINGTALK_APP_KEY="YOUR_DINGTALK_APP_KEY"
+# DINGTALK_APP_SECRET="YOUR_DINGTALK_APP_SECRET"
+
+# 如需接入企业微信同步组织架构/企业微信扫码登录，请添加以下配置:
+# WEWORK_CORP_ID="YOUR_WEWORK_CORP_ID"
+# WEWORK_CORP_SECRET="YOUR_WEWORK_CORP_SECRET"
+
+# 组织ID及组织密钥可在Treadstone官网生成
+TREADSTONE_ORG_ID="YOUR_TREADSTONE_ORG_ID"
+TREADSTONE_ORG_SECRET="YOUR_TREADSTONE_ORG_SECRET"
+
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-## Resources
+5. 修改完全局环境变量之后，初始化数据库：
+```bash
+npx prisma migrate dev --name init
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+6. 全局安装PM2：
+```bash
+npm i -g pm2
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+7. 运行
+```bash
+pm2 start ecosystem.config.js --env=production
+```
 
-## Support
+8. 运行后，修改treadstone-cli服务指向
+```bash
+# <YOUR_TREADSTONE_URL改为你的服务，默认：http://localhost:9000/
+stone config set --registry <YOUR_TREADSTONE_URL>
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+9. 初始化组织名称及管理员账号
+```bash
+stone init
+```
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+10. 浏览器打开私有化部署后的treadstone，使用刚才初始化的管理员账号登录即可。  
+默认：<a href="http://localhost:9000">http://localhost:9000</a>
